@@ -783,9 +783,21 @@ static void gattc_batchscan_threshold_cb(int client_if)
 }
 
 /* Track ADV VSE callback invoked when tracked device is found or lost */
+#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
+static void gattc_track_adv_event_cb(btgatt_track_adv_info_t *p_track_adv_info)
+{
+	char buf[MAX_ADDR_STR_LEN];
+
+	haltest_info("%s, client_if=%d, filt_index=%d, addr_type=%d, bda=%s"
+			", adv_state=%d", __func__, p_track_adv_info->client_if,
+			p_track_adv_info->filt_index, p_track_adv_info->addr_type,
+			bt_bdaddr_t2str(&p_track_adv_info->bd_addr, buf),
+			p_track_adv_info->advertiser_state);
+}
+#else
 static void gattc_track_adv_event_cb(int client_if, int filt_index,
-						int addr_type, bt_bdaddr_t* bda,
-						int adv_state)
+					int addr_type, bt_bdaddr_t* bda,
+					int adv_state)
 {
 	char buf[MAX_ADDR_STR_LEN];
 
@@ -793,6 +805,7 @@ static void gattc_track_adv_event_cb(int client_if, int filt_index,
 			", adv_state=%d", __func__, client_if, filt_index,
 			addr_type, bt_bdaddr_t2str(bda, buf), adv_state);
 }
+#endif
 #endif
 
 static const btgatt_client_callbacks_t btgatt_client_callbacks = {
@@ -1677,6 +1690,25 @@ static void scan_filter_param_setup_c(int argc, const char **argv,
 
 static void scan_filter_param_setup_p(int argc, const char **argv)
 {
+#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
+	btgatt_filt_param_setup_t filt_param;
+
+	RETURN_IF_NULL(if_gatt);
+	VERIFY_CLIENT_IF(2, filt_param.client_if);
+	VERIFY_ACTION(3, filt_param.action);
+	VERIFY_FILT_INDEX(4, filt_param.filt_index);
+	VERIFY_FEAT_SELN(5, filt_param.feat_seln);
+	VERIFY_LIST_LOGIC_TYPE(6, filt_param.list_logic_type);
+	VERIFY_FILT_LOGIC_TYPE(7, filt_param.filt_logic_type);
+	VERIFY_RSSI_HI_THR(8, filt_param.rssi_high_thres);
+	VERIFY_RSSI_LOW_THR(9, filt_param.rssi_low_thres);
+	VERIFY_DELY_MODE(10, filt_param.dely_mode);
+	VERIFY_FND_TIME(11, filt_param.found_timeout);
+	VERIFY_LOST_TIME(12, filt_param.lost_timeout);
+	VERIFY_FND_TIME_CNT(13, filt_param.found_timeout_cnt);
+
+	EXEC(if_gatt->client->scan_filter_param_setup, filt_param);
+#else
 	int client_if;
 	int action;
 	int filt_index;
@@ -1704,6 +1736,7 @@ static void scan_filter_param_setup_p(int argc, const char **argv)
 		filt_index, feat_seln, list_logic_type, filt_logic_type,
 		rssi_high_thres, rssi_low_thres, dely_mode, found_timeout,
 		lost_timeout, found_timeout_cnt);
+#endif
 }
 
 /* scan filter add remove */
@@ -1916,14 +1949,26 @@ static void conn_parameter_update_p(int argc, const char **argv)
 /* set scan parameters */
 static void set_scan_parameters_p(int argc, const char **argv)
 {
+#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
+	int client_if;
 	int scan_interval;
 	int scan_window;
 
 	RETURN_IF_NULL(if_gatt);
-	VERIFY_SCAN_INTERVAL(2, scan_interval);
+	VERIFY_CLIENT_IF(2, client_if);
+	VERIFY_SCAN_INTERVAL(3, scan_interval);
+	VERIFY_SCAN_WINDOW(4, scan_window);
+
+	EXEC(if_gatt->client->set_scan_parameters, client_if, scan_interval, scan_window);
+#else
+	int scan_interval;
+	int scan_window;
+
+	RETURN_IF_NULL(if_gatt);	VERIFY_SCAN_INTERVAL(2, scan_interval);
 	VERIFY_SCAN_WINDOW(3, scan_window);
 
 	EXEC(if_gatt->client->set_scan_parameters, scan_interval, scan_window);
+#endif
 }
 
 /* enable multi advertising */

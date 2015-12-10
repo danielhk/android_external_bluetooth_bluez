@@ -613,11 +613,25 @@ static void handle_track_adv(void *buf, uint16_t len, int fd)
 #if ANDROID_VERSION >= PLATFORM_VER(5, 0, 0)
 	struct hal_ev_gatt_client_track_adv *ev = buf;
 
+#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
+	if (cbs->client->track_adv_event_cb) {
+		btgatt_track_adv_info_t info_t = {
+			.client_if = ev->client_if,
+			.filt_index = ev->filetr_index,
+			.advertiser_state = ev->state,
+			.addr_type = ev->address_type,
+			.bd_addr = *(bt_bdaddr_t *) ev->address,
+		};
+
+		cbs->client->track_adv_event_cb(&info_t);
+	}
+#else
 	if (cbs->client->track_adv_event_cb)
 		cbs->client->track_adv_event_cb(ev->client_if, ev->filetr_index,
 						ev->address_type,
 						(bt_bdaddr_t *) ev->address,
 						ev->state);
+#endif
 #endif
 }
 
@@ -1341,6 +1355,20 @@ static bt_status_t test_command(int command, btgatt_test_params_t *params)
 }
 
 #if ANDROID_VERSION >= PLATFORM_VER(5, 0, 0)
+#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
+static bt_status_t scan_filter_param_setup(btgatt_filt_param_setup_t filt_param)
+{
+	struct hal_cmd_gatt_client_scan_filter_setup *cmd;
+
+	if (!interface_ready())
+		return BT_STATUS_NOT_READY;
+
+	cmd = (struct hal_cmd_gatt_client_scan_filter_setup *)&filt_param;
+	return hal_ipc_cmd(HAL_SERVICE_ID_GATT,
+					HAL_OP_GATT_CLIENT_SCAN_FILTER_SETUP,
+					sizeof(*cmd), cmd, NULL, NULL, NULL);
+}
+#else
 static bt_status_t scan_filter_param_setup(int client_if, int action,
 						int filt_index, int feat_seln,
 						int list_logic_type,
@@ -1374,6 +1402,7 @@ static bt_status_t scan_filter_param_setup(int client_if, int action,
 					HAL_OP_GATT_CLIENT_SCAN_FILTER_SETUP,
 					sizeof(cmd), &cmd, NULL, NULL, NULL);
 }
+#endif
 
 static bt_status_t scan_filter_add_remove(int client_if, int action,
 						int filt_type, int filt_index,
@@ -1491,7 +1520,12 @@ static bt_status_t conn_parameter_update(const bt_bdaddr_t *bd_addr,
 					sizeof(cmd), &cmd, NULL, NULL, NULL);
 }
 
+#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
+static bt_status_t set_scan_parameters(int client_if, int scan_interval,
+					int scan_window)
+#else
 static bt_status_t set_scan_parameters(int scan_interval, int scan_window)
+#endif
 {
 	struct hal_cmd_gatt_client_set_scan_param cmd;
 

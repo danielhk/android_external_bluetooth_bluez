@@ -299,6 +299,10 @@ static void local_le_feat2string(char *str, const bt_local_le_features_t *f)
 
 	str += sprintf(str, "{\n");
 
+#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
+	str += sprintf(str, "Version supported: %u,\n",
+							f->version_supported);
+#endif
 	str += sprintf(str, "Privacy supported: %s,\n",
 				f->local_privacy_enabled ? "TRUE" : "FALSE");
 
@@ -314,14 +318,28 @@ static void local_le_feat2string(char *str, const bt_local_le_features_t *f)
 	str += sprintf(str, "Num of offloaded scan filters: %u,\n",
 						f->max_adv_filter_supported);
 
+#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
+	scan_num = f->scan_result_storage_size;
+#else
 	scan_num = (f->scan_result_storage_size_hibyte << 8) +
-					f->scan_result_storage_size_lobyte;
+ 					f->scan_result_storage_size_lobyte;
+#endif
 
 	str += sprintf(str, "Num of offloaded scan results: %u,\n", scan_num);
 
 	str += sprintf(str, "Activity & energy report support: %s\n",
 			f->activity_energy_info_supported ? "TRUE" : "FALSE");
 
+#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
+	str += sprintf(str, "Total num of trackable advertisers: %u,\n",
+					f->total_trackable_advertisers);
+
+	str += sprintf(str, "Extended scan support: %s,\n",
+				f->extended_scan_support ? "TRUE" : "FALSE");
+
+	str += sprintf(str, "Debug logging support: %s,\n",
+				f->debug_logging_supported ? "TRUE" : "FALSE");
+#endif
 	sprintf(str, "}");
 }
 #endif
