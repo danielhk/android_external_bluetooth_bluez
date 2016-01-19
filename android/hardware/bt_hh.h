@@ -164,13 +164,13 @@ typedef struct {
 
     /** Set the HID proto mode. */
     bt_status_t (*set_protocol)(bt_bdaddr_t *bd_addr, bthh_protocol_mode_t protocolMode);
-
+#ifdef CM_130
     /** Get the HID Idle Time */
     bt_status_t (*get_idle_time)(bt_bdaddr_t *bd_addr);
 
     /** Set the HID Idle Time */
     bt_status_t (*set_idle_time)(bt_bdaddr_t *bd_addr, uint8_t idleTime);
-
+#endif
     /** Send a GET_REPORT to HID device. */
     bt_status_t (*get_report)(bt_bdaddr_t *bd_addr, bthh_report_type_t reportType, uint8_t reportId, int bufferSize);
 

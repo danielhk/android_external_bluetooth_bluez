@@ -64,7 +64,7 @@ typedef enum
    BTHF_WBS_NO,
    BTHF_WBS_YES
 }bthf_wbs_config_t;
-
+#ifdef CM_130
 /* BIND type*/
 typedef enum
 {
@@ -72,7 +72,7 @@ typedef enum
    BTHF_BIND_READ,
    BTHF_BIND_TEST
 }bthf_bind_type_t;
-
+#endif
 
 /* CHLD - Call held handling */
 typedef enum
@@ -160,7 +160,7 @@ typedef void (* bthf_unknown_at_cmd_callback)(char *at_string, bt_bdaddr_t *bd_a
 /** Callback for keypressed (HSP) event.
  */
 typedef void (* bthf_key_pressed_cmd_callback)(bt_bdaddr_t *bd_addr);
-
+#ifdef CM_130
 /** Callback for HF indicators (BIND)
  */
 typedef void (* bthf_bind_cmd_callback)(char* hf_ind, bthf_bind_type_t type, bt_bdaddr_t *bd_addr);
@@ -168,7 +168,7 @@ typedef void (* bthf_bind_cmd_callback)(char* hf_ind, bthf_bind_type_t type, bt_
 /** Callback for HF indicator value (BIEV)
  */
 typedef void (* bthf_biev_cmd_callback)(char* hf_ind_val, bt_bdaddr_t *bd_addr);
-
+#endif
 
 /** BT-HF callback structure. */
 typedef struct {
@@ -191,8 +191,10 @@ typedef struct {
     bthf_clcc_cmd_callback          clcc_cmd_cb;
     bthf_unknown_at_cmd_callback    unknown_at_cmd_cb;
     bthf_key_pressed_cmd_callback   key_pressed_cmd_cb;
+#ifdef CM_130
     bthf_bind_cmd_callback          bind_cmd_cb;
     bthf_biev_cmd_callback          biev_cmd_cb;
+#endif
 } bthf_callbacks_t;
 
 /** Network Status */
@@ -234,22 +236,22 @@ typedef enum {
     BTHF_CALL_MPTY_TYPE_SINGLE = 0,
     BTHF_CALL_MPTY_TYPE_MULTI
 } bthf_call_mpty_type_t;
-
+#ifdef CM_130
 typedef enum {
     BTHF_HF_INDICATOR_STATE_DISABLED = 0,
     BTHF_HF_INDICATOR_STATE_ENABLED
 } bthf_hf_indicator_status_t;
-
+#endif
 typedef enum {
     BTHF_CALL_ADDRTYPE_UNKNOWN = 0x81,
     BTHF_CALL_ADDRTYPE_INTERNATIONAL = 0x91
 } bthf_call_addrtype_t;
-
+#ifdef CM_130
 typedef enum {
     BTHF_VOIP_CALL_NETWORK_TYPE_MOBILE = 0,
     BTHF_VOIP_CALL_NETWORK_TYPE_WIFI
 } bthf_voip_call_network_type_t;
-
+#endif
 typedef enum {
     BTHF_VOIP_STATE_STOPPED = 0,
     BTHF_VOIP_STATE_STARTED
@@ -330,7 +332,7 @@ typedef struct {
 
     /** configureation for the SCO codec */
     bt_status_t (*configure_wbs)( bt_bdaddr_t *bd_addr ,bthf_wbs_config_t config );
-
+#ifdef CM_130
     /** Response for BIND READ command and activation/deactivation of  HF indicator */
     bt_status_t (*bind_response) (int anum, bthf_hf_indicator_status_t status,
                                   bt_bdaddr_t *bd_addr);
@@ -341,6 +343,7 @@ typedef struct {
     /** Sends connectivity network type used by Voip currently to stack */
     bt_status_t (*voip_network_type_wifi) (bthf_voip_state_t is_voip_started,
                                            bthf_voip_call_network_type_t is_network_wifi);
+#endif
 } bthf_interface_t;
 
 __END_DECLS

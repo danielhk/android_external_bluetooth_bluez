@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#ifdef CM_130
 #pragma once
+#else
+#ifndef ANDROID_INCLUDE_BT_SOCK_H
+#define ANDROID_INCLUDE_BT_SOCK_H
+#endif
 
 __BEGIN_DECLS
 
@@ -30,11 +34,13 @@ typedef enum {
     BTSOCK_L2CAP = 3
 } btsock_type_t;
 
+#ifdef CM_130
 typedef enum {
     BTSOCK_OPT_GET_MODEM_BITS = 1,
     BTSOCK_OPT_SET_MODEM_BITS = 2,
     BTSOCK_OPT_CLR_MODEM_BITS = 3,
 } btsock_option_type_t;
+#endif
 
 /** Represents the standard BT SOCKET interface. */
 typedef struct {
@@ -72,7 +78,7 @@ typedef struct {
      */
     bt_status_t (*connect)(const bt_bdaddr_t *bd_addr, btsock_type_t type, const uint8_t* uuid,
             int channel, int* sock_fd, int flags);
-
+#ifdef CM_130
     /*
      * get socket option of rfcomm channel socket.
      */
@@ -84,8 +90,10 @@ typedef struct {
      */
     bt_status_t (*set_sock_opt)(btsock_type_t type, int channel, btsock_option_type_t option_name,
             void *option_value, int option_len);
-
+#endif
 } btsock_interface_t;
 
 __END_DECLS
-
+#ifdef CM_130
+#endif /* ANDROID_INCLUDE_BT_SOCK_H */
+#endif
