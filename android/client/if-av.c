@@ -73,8 +73,11 @@ static btav_callbacks_t av_cbacks = {
 static void init_p(int argc, const char **argv)
 {
 	RETURN_IF_NULL(if_av);
-
+#ifdef CM_130
+	EXEC(if_av->init, &av_cbacks, 1, 0); // max_connections=1, a2dp_multicast_state=false
+#else
 	EXEC(if_av->init, &av_cbacks);
+#endif
 }
 
 /* connect */

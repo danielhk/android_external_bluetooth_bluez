@@ -44,13 +44,13 @@ __BEGIN_DECLS
 #define BT_PROFILE_HEALTH_ID "health"
 #define BT_PROFILE_SOCKETS_ID "socket"
 #define BT_PROFILE_HIDHOST_ID "hidhost"
+#define BT_PROFILE_HIDDEV_ID "hiddev"
 #define BT_PROFILE_PAN_ID "pan"
 #define BT_PROFILE_MAP_CLIENT_ID "map_client"
-#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
-    #define BT_PROFILE_SDP_CLIENT_ID "sdp"
-#endif
+#define BT_PROFILE_SDP_CLIENT_ID "sdp"
 #define BT_PROFILE_GATT_ID "gatt"
 #define BT_PROFILE_AV_RC_ID "avrcp"
+#define WIPOWER_PROFILE_ID "wipower"
 #define BT_PROFILE_AV_RC_CTRL_ID "avrcp_ctrl"
 
 /** Bluetooth Address */
@@ -145,25 +145,17 @@ typedef struct
 
 typedef struct
 {
-#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
     uint16_t version_supported;
-#endif
     uint8_t local_privacy_enabled;
     uint8_t max_adv_instance;
     uint8_t rpa_offload_supported;
     uint8_t max_irk_list_size;
     uint8_t max_adv_filter_supported;
-#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
     uint8_t activity_energy_info_supported;
     uint16_t scan_result_storage_size;
     uint16_t total_trackable_advertisers;
     bool extended_scan_support;
     bool debug_logging_supported;
-#else
-    uint8_t scan_result_storage_size_lobyte;
-    uint8_t scan_result_storage_size_hibyte;
-    uint8_t activity_energy_info_supported;
-#endif
 }bt_local_le_features_t;
 
 /* Bluetooth Adapter and Remote Device property types */
@@ -328,11 +320,7 @@ typedef void (*discovery_state_changed_callback)(bt_discovery_state_t state);
 
 /** Bluetooth Legacy PinKey Request callback */
 typedef void (*pin_request_callback)(bt_bdaddr_t *remote_bd_addr,
-#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
                                         bt_bdname_t *bd_name, uint32_t cod, bool min_16_digit);
-#else
-                                        bt_bdname_t *bd_name, uint32_t cod);
-#endif
 
 /** Bluetooth SSP Request callback - Just Works & Numeric Comparison*/
 /** pass_key - Shall be 0 for BT_SSP_PAIRING_VARIANT_CONSENT &
@@ -369,6 +357,10 @@ typedef void (*callback_thread_event)(bt_cb_thread_evt evt);
 /* Receive any HCI event from controller. Must be in DUT Mode for this callback to be received */
 typedef void (*dut_mode_recv_callback)(uint16_t opcode, uint8_t *buf, uint8_t len);
 
+/** Bluetooth HCI event Callback */
+/* Receive any HCI event from controller for raw commands */
+typedef void (*hci_event_recv_callback)(uint8_t event_code, uint8_t *buf, uint8_t len);
+
 /* LE Test mode callbacks
 * This callback shall be invoked whenever the le_tx_test, le_rx_test or le_test_end is invoked
 * The num_packets is valid only for le_test_end command */
@@ -402,6 +394,7 @@ typedef struct {
     dut_mode_recv_callback dut_mode_recv_cb;
     le_test_mode_callback le_test_mode_cb;
     energy_info_callback energy_info_cb;
+    hci_event_recv_callback hci_event_recv_cb;
 } bt_callbacks_t;
 
 typedef void (*alarm_cb)(void *data);
@@ -459,6 +452,9 @@ typedef struct {
 
     /** Closes the interface. */
     void (*cleanup)(void);
+
+    /** SSR cleanup. */
+    void (*ssrcleanup)(void);
 
     /** Get all Bluetooth Adapter properties at init */
     int (*get_adapter_properties)(void);
@@ -534,6 +530,10 @@ typedef struct {
 
     /* Send any test HCI (vendor-specific) command to the controller. Must be in DUT Mode */
     int (*dut_mode_send)(uint16_t opcode, uint8_t *buf, uint8_t len);
+
+    /* Send any test HCI command to the controller. */
+    int (*hci_cmd_send)(uint16_t opcode, uint8_t *buf, uint8_t len);
+
     /** BLE Test Mode APIs */
     /* opcode MUST be one of: LE_Receiver_Test, LE_Transmitter_Test, LE_Test_End */
     int (*le_test_mode)(uint16_t opcode, uint8_t *buf, uint8_t len);
@@ -550,7 +550,7 @@ typedef struct {
       * Success indicates that the VSC command was sent to controller
       */
     int (*read_energy_info)();
-#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
+
     /**
      * Native support for dumpsys function
      * Function is synchronous and |fd| is owned by caller.
@@ -561,7 +561,9 @@ typedef struct {
      * Clear /data/misc/bt_config.conf and erase all stored connections
      */
     int (*config_clear)(void);
-#endif
+
+    /** BT stack Test interface */
+    const void* (*get_testapp_interface)(int test_app_profile);
 } bt_interface_t;
 
 /** TODO: Need to add APIs for Service Discovery, Service authorization and

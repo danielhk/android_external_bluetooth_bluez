@@ -18,6 +18,9 @@ BLUEZ_COMMON_CFLAGS := -DVERSION=\"$(BLUEZ_VERSION)\" \
 			-DHAVE_LINUX_IF_ALG_H \
 			-DHAVE_LINUX_TYPES_H \
 
+# Indicate CyanogenMod 13.0
+BLUEZ_COMMON_CFLAGS += -DCM_130
+
 # Enable warnings enabled in autotools build
 BLUEZ_COMMON_CFLAGS += -Wall -Wextra \
 			-Wdeclaration-after-statement \

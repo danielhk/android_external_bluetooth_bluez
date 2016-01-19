@@ -239,12 +239,7 @@ typedef void (*batchscan_reports_callback)(int client_if, int status, int report
 typedef void (*batchscan_threshold_callback)(int client_if);
 
 /** Track ADV VSE callback invoked when tracked device is found or lost */
-#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
 typedef void (*track_adv_event_callback)(btgatt_track_adv_info_t *p_track_adv_info);
-#else
-typedef void (*track_adv_event_callback)(int client_if, int filt_index, int addr_type,
-                                             bt_bdaddr_t* bda, int adv_state);
-#endif
 
 /** Callback invoked when scan parameter setup has completed */
 typedef void (*scan_parameter_setup_completed_callback)(int client_if,
@@ -382,14 +377,8 @@ typedef struct {
     bt_status_t (*read_remote_rssi)( int client_if, const bt_bdaddr_t *bd_addr);
 
     /** Setup scan filter params */
-#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
     bt_status_t (*scan_filter_param_setup)(btgatt_filt_param_setup_t filt_param);
-#else
-    bt_status_t (*scan_filter_param_setup)(int client_if, int action, int filt_index, int feat_seln,
-                                      int list_logic_type, int filt_logic_type, int rssi_high_thres,
-                                      int rssi_low_thres, int dely_mode, int found_timeout,
-                                      int lost_timeout, int found_timeout_cnt);
-#endif
+
 
     /** Configure a scan filter condition  */
     bt_status_t (*scan_filter_add_remove)(int client_if, int action, int filt_type,
@@ -423,11 +412,7 @@ typedef struct {
                     int max_interval, int latency, int timeout);
 
     /** Sets the LE scan interval and window in units of N*0.625 msec */
-#if ANDROID_VERSION >= PLATFORM_VER(6, 0, 0)
     bt_status_t (*set_scan_parameters)(int client_if, int scan_interval, int scan_window);
-#else
-    bt_status_t (*set_scan_parameters)(int scan_interval, int scan_window);
-#endif
 
     /* Setup the parameters as per spec, user manual specified values and enable multi ADV */
     bt_status_t (*multi_adv_enable)(int client_if, int min_interval,int max_interval,int adv_type,

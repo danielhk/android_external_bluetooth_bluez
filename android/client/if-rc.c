@@ -160,19 +160,28 @@ static void passthrough_cmd_cb(int id, int key_state)
 }
 
 static btrc_callbacks_t rc_cbacks = {
-	.size = sizeof(rc_cbacks),
-	.remote_features_cb = remote_features_cb,
-	.get_play_status_cb = get_play_status_cb,
-	.list_player_app_attr_cb = list_player_app_attr_cb,
-	.list_player_app_values_cb = list_player_app_values_cb,
-	.get_player_app_value_cb = get_player_app_value_cb,
-	.get_player_app_attrs_text_cb = get_player_app_attrs_text_cb,
-	.get_player_app_values_text_cb = get_player_app_values_text_cb,
-	.set_player_app_value_cb = set_player_app_value_cb,
-	.get_element_attr_cb = get_element_attr_cb,
-	.register_notification_cb = register_notification_cb,
-	.volume_change_cb = volume_change_cb,
-	.passthrough_cmd_cb = passthrough_cmd_cb,
+	sizeof(rc_cbacks),
+	remote_features_cb,
+	get_play_status_cb,
+	list_player_app_attr_cb,
+	list_player_app_values_cb,
+	get_player_app_value_cb,
+	get_player_app_attrs_text_cb,
+	get_player_app_values_text_cb,
+	set_player_app_value_cb,
+	get_element_attr_cb,
+	register_notification_cb,
+	volume_change_cb,
+	passthrough_cmd_cb,
+#ifdef CM_130
+	NULL, //get_folderitems_cb;
+	NULL, //set_addrplayer_cb;
+	NULL, //set_browsed_player_cb;
+	NULL, //change_path_cb;
+	NULL, //play_item_cb;
+	NULL, //get_item_attr_cb;
+	NULL, //connection_state_cb;
+#endif
 };
 
 /* init */
@@ -180,8 +189,11 @@ static btrc_callbacks_t rc_cbacks = {
 static void init_p(int argc, const char **argv)
 {
 	RETURN_IF_NULL(if_rc);
-
+#ifdef CM_130
+	EXEC(if_rc->init, &rc_cbacks, 1);	// max_avrcp_connections
+#else
 	EXEC(if_rc->init, &rc_cbacks);
+#endif
 }
 
 /* get_play_status_rsp */
@@ -220,8 +232,11 @@ static void get_play_status_rsp_p(int argc, const char **argv)
 	play_status = str2btrc_play_status_t(argv[2]);
 	song_len = (uint32_t) atoi(argv[3]);
 	song_pos = (uint32_t) atoi(argv[4]);
-
+#ifdef CM_130
+	EXEC(if_rc->get_play_status_rsp, play_status, song_len, song_pos, NULL); // bt_bdaddr_t *bd_addr
+#else
 	EXEC(if_rc->get_play_status_rsp, play_status, song_len, song_pos);
+#endif
 }
 
 /* get_element_attr_rsp */
@@ -255,8 +270,11 @@ static void get_element_attr_rsp_p(int argc, const char **argv)
 	num_attr = (uint8_t) atoi(argv[2]);
 	attrs.attr_id = str2btrc_media_attr_t(argv[3]);
 	strcpy((char *)attrs.text, argv[4]);
-
+#ifdef CM_130
+	EXEC(if_rc->get_element_attr_rsp, num_attr, &attrs, NULL); // bt_bdaddr_t *bd_addr
+#else
 	EXEC(if_rc->get_element_attr_rsp, num_attr, &attrs);
+#endif
 }
 
 /* set_volume */
@@ -278,8 +296,11 @@ static void set_volume_p(int argc, const char **argv)
 	}
 
 	volume = (uint8_t) atoi(argv[2]);
-
+#ifdef CM_130
+	EXEC(if_rc->set_volume, volume, NULL); // bt_bdaddr_t *bd_addr
+#else
 	EXEC(if_rc->set_volume, volume);
+#endif
 }
 
 /* set_player_app_value_rsp */
@@ -305,8 +326,11 @@ static void set_player_app_value_rsp_p(int argc, const char **argv)
 	}
 
 	rsp_status = str2btrc_status_t(argv[2]);
-
+#ifdef CM_130
+	EXEC(if_rc->set_player_app_value_rsp, rsp_status, NULL); // bt_bdaddr_t *bd_addr
+#else
 	EXEC(if_rc->set_player_app_value_rsp, rsp_status);
+#endif
 }
 
 /* register_notification_rsp */
@@ -362,8 +386,11 @@ static void register_notification_rsp_p(int argc, const char **argv)
 		haltest_error("not supported");
 		return;
 	}
-
+#ifdef CM_130
+	EXEC(if_rc->register_notification_rsp, event_id, type, &reg, NULL); // bt_bdaddr_t *bd_addr
+#else
 	EXEC(if_rc->register_notification_rsp, event_id, type, &reg);
+#endif
 }
 
 /* cleanup */
