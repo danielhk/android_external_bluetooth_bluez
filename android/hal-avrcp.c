@@ -69,9 +69,9 @@ static void handle_list_player_values(void *buf, uint16_t len, int fd)
 
 	if (cbs->list_player_app_values_cb)
 #ifdef CM_130
-		cbs->list_player_app_values_cb(NULL);
+		cbs->list_player_app_values_cb(ev->attr, NULL);
 #else
-		cbs->list_player_app_values_cb();
+		cbs->list_player_app_values_cb(ev->attr);
 #endif
 }
 
